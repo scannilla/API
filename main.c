@@ -24,6 +24,7 @@ int main() {
     char *p;
     char buffer[BUFFERSIZE];
     int graphIndex = 0;
+    graph *temp, *new;
     fgets(buffer,BUFFERSIZE,stdin);
     d = strtol(buffer, &p, 10);
     k = strtol(p+1, &p, 10);
@@ -34,17 +35,66 @@ int main() {
         strcpy(cmd, buffer);
         if(strncmp(cmd, "AggiungiGrafo", 13)==0) {
             points = addGraph();
-            if(head==NULL || (head -> totalScore)>points)
+            if(graphIndex>=k && tail!=NULL && tail->totalScore>points) {
+                tail->prev->next = NULL;
+                temp=tail;
+                tail=temp->prev;
+                free(temp);
+            }
+            if(head==NULL || (head -> totalScore)>points) {
                 //TODO inserimento in testa
-                ;
-            else if((tail->totalScore)<points)
-                //TODO inserimento in coda
-                ;
-            else
-                //TODO inserimento in mezzo, valutare puntatori
-                ;
+                temp=head;
+                head = (graph*)malloc(sizeof (graph));
+                head->totalScore = points;
+                head->index = graphIndex;
+                head->next = temp;
+                head->prev = NULL;
+                if (tail==NULL)
+                    tail = head;
+
+            }
+            else if((tail->totalScore)<=points) {
+                if(tail!=head) {
+                    temp = tail;
+                    tail = (graph*)malloc(sizeof(graph));
+                    tail->totalScore = points;
+                    tail->index = graphIndex;
+                    tail->next = NULL;
+                    tail->prev = temp;
+                    temp->next = tail;
+                }
+                else {
+                    tail = (graph*)malloc(sizeof(graph));
+                    tail->totalScore = points;
+                    tail->index = graphIndex;
+                    tail->next = NULL;
+                    tail->prev = head;
+                    head->next = tail;
+                }
+
+            }
+            else {
+                temp = head;
+                while(temp->totalScore <= points)
+                    temp = temp->next;
+                new = (graph*) malloc(sizeof(graph));
+                new->totalScore = points;
+                new->index = graphIndex;
+                new->prev=temp->prev;
+                temp->prev=new;
+                new->next=temp;
+            }
+            graphIndex++;
         }
-        printf("%d", points);
+        else if(strncmp(cmd, "TopK", 4)==0) {
+            for(temp=head;temp!=NULL;temp=temp->next) {
+                if(temp->next!=NULL)
+                    printf("%d ",temp->index);
+                else
+                    printf("%d", temp->index);
+            }
+        }
+        //printf("%d", points);
     }
 }
 
